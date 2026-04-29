@@ -406,7 +406,7 @@ function getRewrittenMessage(categories: SelfRiskCategory[]) {
   }
 
   if (categories.includes("预算回避") || categories.includes("画饼不承诺")) {
-    return "这件事我们可以先对齐目标、双方投入、预算范围和交付边界。如果你觉得方向合适，我们再确认时间节点和书面合作方式。";
+    return "这件事我们可以先对齐目标、双方投入、预算范围和交付边界。如果方向合适，我们再确认时间节点和书面合作方式。";
   }
 
   if (categories.includes("语气打压")) {
@@ -422,7 +422,7 @@ function getRewrittenMessage(categories: SelfRiskCategory[]) {
   }
 
   if (categories.includes("边界模糊")) {
-    return "我们可以先把合作范围、交付边界、时间节点和确认方式写清楚，后续执行会更稳。";
+    return "我们可以先把合作范围、时间节点、交付内容和变更机制写清楚，再进入执行。";
   }
 
   if (categories.includes("过度说教")) {
