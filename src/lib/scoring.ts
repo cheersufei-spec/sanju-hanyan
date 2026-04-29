@@ -1,6 +1,6 @@
 import { calculateRiskRadar } from "./radar";
 import { scenarioAdvice, type CollaborationScenario } from "./scenarios";
-import type { RiskRadar } from "./types";
+import type { ReplyScripts, RiskRadar } from "./types";
 
 export type RiskCategory =
   | "白嫖画饼"
@@ -24,6 +24,7 @@ export type AnalysisResult = {
   shareConclusion: string;
   scenario: CollaborationScenario;
   radar: RiskRadar;
+  replyScripts: ReplyScripts;
 };
 
 const riskLexicon: Record<RiskCategory, string[]> = {
@@ -462,6 +463,11 @@ export function analyzeText(
 
   const shareConclusion = getShareConclusion(finalScore, hasPersonaAttack);
   const radar = calculateRiskRadar(normalizedText, finalScore);
+  const replyScripts = getReplyScripts(
+    finalScore,
+    riskHits["亲密越界"].length > 0,
+    hasPersonaAttack || riskHits["打压PUA"].length > 0,
+  );
 
   return {
     score: finalScore,
@@ -474,6 +480,77 @@ export function analyzeText(
     shareConclusion,
     scenario,
     radar,
+    replyScripts,
+  };
+}
+
+function getReplyScripts(
+  score: number,
+  hasIntimacyRisk: boolean,
+  hasRespectRisk: boolean,
+): ReplyScripts {
+  if (hasIntimacyRisk) {
+    return {
+      gentle:
+        "我们还是先聚焦合作本身吧。关于目标、分工、预算和交付，我建议用文字确认一下。",
+      business:
+        "这次沟通我希望保持在正式合作范围内。私人话题和单独私密场合我这边不方便，如有合作需求可以通过正式会议或文字同步。",
+      firm:
+        "我不接受在酒店、酒局、车内或私密空间沟通合作。基于目前沟通方式，我这边暂停继续推进。",
+    };
+  }
+
+  if (hasRespectRisk) {
+    return {
+      gentle:
+        "我理解你有不同判断。为了让沟通更有效，我们可以先回到合作目标、分工和结果标准本身。",
+      business:
+        "我希望这次沟通聚焦具体合作事项，包括目标、预算、交付和责任机制。对个人能力或动机的评价暂时不作为讨论重点。",
+      firm:
+        "我不接受以人格评价或代际标签来替代合作讨论。后续如需继续沟通，请回到具体事项和书面确认。",
+    };
+  }
+
+  if (score <= 20) {
+    return {
+      gentle:
+        "感谢你的说明，我这边可以基于目前信息继续推进。我们把目标、分工和时间节点简单同步成文字，后续执行会更高效。",
+      business:
+        "为了保证合作推进效率，建议我们先确认合作目标、双方投入、交付范围、时间节点和书面确认方式。",
+      firm:
+        "我这边可以继续推进，但关键合作事项需要先形成文字确认，包括目标、交付、时间节点和责任边界。",
+    };
+  }
+
+  if (score <= 45) {
+    return {
+      gentle:
+        "我理解这件事有长期价值。为了让双方投入更有效，我们先把交付范围、预算边界和时间节点确认一下。",
+      business:
+        "正式推进前，建议先确认合作目标、预算范围、双方投入、交付内容、验收方式和后续变更机制。",
+      firm:
+        "在预算、交付和责任机制没有确认前，我这边暂时不会投入进一步执行资源。",
+    };
+  }
+
+  if (score <= 70) {
+    return {
+      gentle:
+        "我愿意继续了解，但在正式投入前，需要先明确目标、交付范围、预算和责任机制。这样对双方都更稳妥。",
+      business:
+        "目前合作边界还不够清晰。建议先以书面方式确认预算、交付范围、时间节点、验收标准和责任分工，再决定是否推进。",
+      firm:
+        "在合作目标、预算、交付范围和责任分工不清晰的情况下，我这边不继续推进执行。",
+    };
+  }
+
+  return {
+    gentle:
+      "感谢你的邀请。基于目前沟通方式和合作边界，我判断这次暂时不适合继续推进。祝项目顺利。",
+    business:
+      "基于目前沟通内容，合作目标、边界和责任机制尚不清晰，我这边暂不继续投入。后续如有正式合作需求，请通过书面方式同步。",
+    firm:
+      "这次沟通已经超出我能接受的合作边界。我会停止继续投入，也不接受在边界不清的情况下继续推进。",
   };
 }
 

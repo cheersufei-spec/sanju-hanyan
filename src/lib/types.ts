@@ -6,3 +6,9 @@ export type RiskRadar = {
   intimacyRisk: number;
   writtenProofRisk: number;
 };
+
+export type ReplyScripts = {
+  gentle: string;
+  business: string;
+  firm: string;
+};

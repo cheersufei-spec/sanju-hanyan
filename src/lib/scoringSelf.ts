@@ -1,6 +1,6 @@
 import { calculateRiskRadar } from "./radar";
 import { scenarioAdvice, type CollaborationScenario } from "./scenarios";
-import type { RiskRadar } from "./types";
+import type { ReplyScripts, RiskRadar } from "./types";
 
 export type SelfRiskCategory =
   | "画饼不承诺"
@@ -24,6 +24,7 @@ export type SelfAnalysisResult = {
   rewrittenMessage: string;
   scenario: CollaborationScenario;
   radar: RiskRadar;
+  replyScripts: ReplyScripts;
 };
 
 const selfRiskLexicon: Record<SelfRiskCategory, string[]> = {
@@ -438,6 +439,50 @@ export function analyzeSelfText(
     rewrittenMessage: getRewrittenMessage(matchedCategories),
     scenario,
     radar: calculateRiskRadar(normalizedText, finalScore),
+    replyScripts: getSelfReplyScripts(matchedCategories),
+  };
+}
+
+function getSelfReplyScripts(categories: SelfRiskCategory[]): ReplyScripts {
+  if (categories.includes("亲密越界")) {
+    return {
+      gentle:
+        "我们先聚焦合作本身。关于目标、预算、交付和时间安排，可以通过文字或正式会议确认。",
+      business:
+        "本次沟通建议保持在正式合作范围内，私人话题和非正式空间可以先不涉及。",
+      firm:
+        "我会避免任何可能让对方感到暧昧、私密或不安全的表达，把沟通全部拉回正式合作事项。",
+    };
+  }
+
+  if (categories.includes("预算回避") || categories.includes("画饼不承诺")) {
+    return {
+      gentle:
+        "这个方向我觉得有合作空间。我们可以先简单对齐目标、双方投入和预算范围，再看是否适合继续推进。",
+      business:
+        "建议我们先确认合作目标、双方资源投入、预算范围、交付边界和时间节点。方向合适的话，再形成一页合作备忘录。",
+      firm:
+        "在预算范围、交付边界和责任分工没有确认前，我不会要求对方先投入执行资源。",
+    };
+  }
+
+  if (categories.includes("语气打压") || categories.includes("过度说教")) {
+    return {
+      gentle:
+        "我理解我们对这件事的判断可能不完全一样。我们可以先聚焦目标、分工和预期结果来讨论。",
+      business:
+        "为了提高沟通效率，我建议先讨论具体事项：目标、分工、时间节点、资源投入和结果标准。",
+      firm:
+        "我会避免评价对方个人能力或态度，只讨论合作事项和执行条件。",
+    };
+  }
+
+  return {
+    gentle:
+      "这段表达整体比较清晰，可以发送。可以再补充一个具体时间节点，让对方更好判断。",
+    business:
+      "表达清晰，可以发送。建议补充合作目标、双方投入、交付边界和书面确认方式。",
+    firm: "表达边界感清楚，可以发送。关键事项建议以文字为准。",
   };
 }
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Badge from "./Badge";
+import ReplyScripts from "./ReplyScripts";
 import RiskRadar from "./RiskRadar";
 import type {
   SelfAnalysisResult,
@@ -121,6 +122,10 @@ export default function SelfResultPanel({ result }: SelfResultPanelProps) {
             {result.rewrittenMessage}
           </p>
         </div>
+      </div>
+
+      <div className="mt-5">
+        <ReplyScripts scripts={result.replyScripts} title="三档改写话术" />
       </div>
     </section>
   );

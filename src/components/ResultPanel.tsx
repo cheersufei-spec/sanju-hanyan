@@ -1,4 +1,5 @@
 import Badge from "./Badge";
+import ReplyScripts from "./ReplyScripts";
 import RiskRadar from "./RiskRadar";
 import type { AnalysisResult, RiskCategory } from "../lib/scoring";
 
@@ -89,15 +90,15 @@ export default function ResultPanel({ result }: ResultPanelProps) {
         />
       </div>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
+      <div className="mt-5">
         <div className="rounded-2xl border border-black/10 bg-paper p-5">
           <h3 className="text-base font-bold text-ink">建议动作</h3>
           <p className="mt-2 text-sm leading-6 text-muted">{result.advice}</p>
         </div>
-        <div className="rounded-2xl border border-accent/30 bg-accent/10 p-5">
-          <h3 className="text-base font-bold text-ink">体面反击话术</h3>
-          <p className="mt-2 text-sm leading-6 text-ink">{result.reply}</p>
-        </div>
+      </div>
+
+      <div className="mt-5">
+        <ReplyScripts scripts={result.replyScripts} title="三档体面回复" />
       </div>
     </section>
   );
