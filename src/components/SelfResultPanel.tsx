@@ -63,6 +63,7 @@ export default function SelfResultPanel({ result }: SelfResultPanelProps) {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-2xl font-black text-ink">{result.title}</h2>
+            <Badge tone="neutral">当前场景：{result.scenario}</Badge>
             {result.riskTags.map((tag) => (
               <Badge key={tag} tone={tag === "清爽合作感" ? "success" : "accent"}>
                 {tag}

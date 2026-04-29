@@ -1,3 +1,5 @@
+import { scenarioAdvice, type CollaborationScenario } from "./scenarios";
+
 export type SelfRiskCategory =
   | "画饼不承诺"
   | "预算回避"
@@ -18,6 +20,7 @@ export type SelfAnalysisResult = {
   potentialImpact: string;
   advice: string;
   rewrittenMessage: string;
+  scenario: CollaborationScenario;
 };
 
 const selfRiskLexicon: Record<SelfRiskCategory, string[]> = {
@@ -25,6 +28,7 @@ const selfRiskLexicon: Record<SelfRiskCategory, string[]> = {
     "长期价值",
     "以后资源很多",
     "后面机会很多",
+    "我可以帮你介绍很多人",
     "后面资源不会少",
     "不会亏待你",
     "给你机会",
@@ -37,6 +41,19 @@ const selfRiskLexicon: Record<SelfRiskCategory, string[]> = {
     "后面再说",
     "未来空间很大",
     "这个对你有好处",
+    "免费试稿",
+    "试稿",
+    "先出一版",
+    "免费出一版",
+    "先给个方案",
+    "曝光置换",
+    "没有预算",
+    "预算有限",
+    "预算不多",
+    "先看看效果",
+    "先做个方案",
+    "回去做个作业",
+    "完整增长方案",
   ],
   预算回避: [
     "先别谈预算",
@@ -51,6 +68,8 @@ const selfRiskLexicon: Record<SelfRiskCategory, string[]> = {
     "先跑起来",
     "别这么功利",
     "别太现实",
+    "薪资后面谈",
+    "薪资后面再聊",
   ],
   语气打压: [
     "年轻人",
@@ -69,6 +88,7 @@ const selfRiskLexicon: Record<SelfRiskCategory, string[]> = {
     "你这个水平",
     "你凭什么",
     "别太把自己当回事",
+    "年轻人要吃苦",
   ],
   边界模糊: [
     "看情况",
@@ -83,6 +103,22 @@ const selfRiskLexicon: Record<SelfRiskCategory, string[]> = {
     "后面再定",
     "先口头确认",
     "别搞这么麻烦",
+    "岗位边界后面定",
+    "改到满意为止",
+    "多改几版",
+    "授权",
+    "商用",
+    "买断",
+    "全平台使用",
+    "永久使用",
+    "需求再加一点",
+    "付款流程比较慢",
+    "月底再付",
+    "先上线再说",
+    "验收后再谈",
+    "这个不算新增需求",
+    "预算不变",
+    "时间不变",
   ],
   责任转嫁: [
     "我要的是结果",
@@ -94,6 +130,7 @@ const selfRiskLexicon: Record<SelfRiskCategory, string[]> = {
     "别找理由",
     "你们要对结果负责",
     "做不到就是能力不行",
+    "你们负责到底",
   ],
   权力压迫: [
     "这个圈子很小",
@@ -107,6 +144,11 @@ const selfRiskLexicon: Record<SelfRiskCategory, string[]> = {
     "你知道我是谁吗",
     "你要懂得把握机会",
     "这个机会不是谁都有",
+    "估值太高",
+    "你们还不够成熟",
+    "你这个不性感",
+    "市场太小",
+    "你们壁垒不够",
   ],
   亲密越界: [
     "美女",
@@ -133,6 +175,13 @@ const selfRiskLexicon: Record<SelfRiskCategory, string[]> = {
     "会来事",
     "看你表现",
     "你让我开心了",
+    "酒店",
+    "房间",
+    "车上",
+    "私下",
+    "单独",
+    "深夜",
+    "不要告诉别人",
   ],
   过度说教: [
     "我教你",
@@ -148,6 +197,12 @@ const selfRiskLexicon: Record<SelfRiskCategory, string[]> = {
     "按我说的做",
     "不要反驳",
     "你先听完",
+    "你先证明自己",
+    "抗压能力",
+    "我们节奏很快",
+    "别太看重钱",
+    "价值观匹配",
+    "创业公司都这样",
   ],
 };
 
@@ -281,7 +336,10 @@ const getLevelConfig = (score: number) => {
   };
 };
 
-export function analyzeSelfText(text: string): SelfAnalysisResult {
+export function analyzeSelfText(
+  text: string,
+  scenario: CollaborationScenario = "商务合作",
+): SelfAnalysisResult {
   const normalizedText = text.trim();
   const riskHits = emptyRiskHits();
   let score = 5;
@@ -349,7 +407,17 @@ export function analyzeSelfText(text: string): SelfAnalysisResult {
     score += 15;
   }
 
-  const finalScore = clampScore(score);
+  const scenarioAdjustment = getScenarioAdjustment(
+    normalizedText,
+    scenario,
+    riskHits,
+    positiveHits,
+  );
+  score += scenarioAdjustment.score;
+
+  const finalScore = clampScore(
+    Math.max(score, scenarioAdjustment.minimumScore ?? 0),
+  );
   const levelConfig = getLevelConfig(finalScore);
   const riskTags =
     matchedCategories.length > 0
@@ -359,11 +427,149 @@ export function analyzeSelfText(text: string): SelfAnalysisResult {
   return {
     score: finalScore,
     ...levelConfig,
+    advice: scenarioAdjustment.advice ?? levelConfig.advice,
     riskTags,
     riskHits,
     potentialImpact: getPotentialImpact(matchedCategories, riskHits),
     rewrittenMessage: getRewrittenMessage(matchedCategories),
+    scenario,
   };
+}
+
+function getScenarioAdjustment(
+  text: string,
+  scenario: CollaborationScenario,
+  riskHits: Record<SelfRiskCategory, string[]>,
+  positiveHits: string[],
+) {
+  const adjustment: {
+    score: number;
+    minimumScore?: number;
+    advice?: string;
+  } = {
+    score: 0,
+    advice: scenarioAdvice[scenario],
+  };
+
+  if (scenario === "商务合作") {
+    const hasBusinessContext = ["预算", "合作", "交付", "资源", "合同"].some(
+      (keyword) => text.includes(keyword),
+    );
+    const hasPromise = ["先做起来", "后面再说", "长期价值", "以后资源"].some(
+      (keyword) => text.includes(keyword),
+    );
+
+    if (hasBusinessContext && hasPromise) {
+      adjustment.score += 10;
+    }
+  }
+
+  if (scenario === "职场女性对外合作") {
+    if (riskHits["亲密越界"].length > 0) {
+      adjustment.score += 15;
+    }
+
+    const hasPrivateInvite = [
+      "酒店",
+      "房间",
+      "车上",
+      "私下",
+      "单独",
+      "晚上",
+      "深夜",
+      "不要告诉别人",
+    ].some((keyword) => text.includes(keyword));
+
+    if (hasPrivateInvite) {
+      adjustment.minimumScore = 75;
+    }
+  }
+
+  if (scenario === "创作者商务") {
+    if (
+      ["免费试稿", "先出一版", "免费出一版", "先看看效果", "曝光置换"].some(
+        (keyword) => text.includes(keyword),
+      )
+    ) {
+      adjustment.score += 15;
+    }
+
+    const hasBroadUsage = ["永久使用", "买断", "全平台使用"].some((keyword) =>
+      text.includes(keyword),
+    );
+    const hasCommercialTerms = ["报价", "合同", "授权", "付款"].some(
+      (keyword) => positiveHits.includes(keyword) || text.includes(keyword),
+    );
+
+    if (hasBroadUsage && !hasCommercialTerms) {
+      adjustment.score += 20;
+    }
+  }
+
+  if (scenario === "求职面试") {
+    const hasFreeAssignment = ["先做个方案", "回去做个作业", "完整增长方案"].some(
+      (keyword) => text.includes(keyword),
+    );
+    const hasJobTerms = ["薪资", "岗位", "职责", "汇报线"].some((keyword) =>
+      text.includes(keyword),
+    );
+
+    if (hasFreeAssignment && !hasJobTerms) {
+      adjustment.score += 20;
+    }
+
+    if (
+      ["薪资后面谈", "薪资后面再聊", "试用期再说", "你先证明自己"].some(
+        (keyword) => text.includes(keyword),
+      )
+    ) {
+      adjustment.score += 15;
+    }
+  }
+
+  if (scenario === "投资人沟通") {
+    if (
+      ["完整数据", "后台", "客户名单", "财务模型", "把后台给我看看"].some(
+        (keyword) => text.includes(keyword),
+      )
+    ) {
+      adjustment.score += 20;
+    }
+
+    const hasValuationPressure = [
+      "估值太高",
+      "不够成熟",
+      "不性感",
+      "市场太小",
+    ].some((keyword) => text.includes(keyword));
+
+    if (hasValuationPressure && riskHits["权力压迫"].length > 0) {
+      adjustment.score += 15;
+    }
+  }
+
+  if (scenario === "甲乙方合作") {
+    const hasScopeCreep = ["新增需求", "需求再加一点", "这个不算新增需求"].some(
+      (keyword) => text.includes(keyword),
+    );
+    const hasFixedConstraint = ["预算不变", "时间不变"].some((keyword) =>
+      text.includes(keyword),
+    );
+
+    if (hasScopeCreep && hasFixedConstraint) {
+      adjustment.score += 20;
+    }
+
+    if (
+      ["付款流程比较慢", "付款流程慢", "月底再付", "验收后再谈"].some(
+        (keyword) => text.includes(keyword),
+      )
+    ) {
+      adjustment.score += 15;
+    }
+  }
+
+  return adjustment;
 }
 
 function getPotentialImpact(
@@ -405,12 +611,12 @@ function getRewrittenMessage(categories: SelfRiskCategory[]) {
     return "我们先聚焦合作本身。关于目标、预算、交付和时间安排，可以通过文字或正式会议确认。";
   }
 
-  if (categories.includes("预算回避") || categories.includes("画饼不承诺")) {
-    return "这件事我们可以先对齐目标、双方投入、预算范围和交付边界。如果方向合适，我们再确认时间节点和书面合作方式。";
-  }
-
   if (categories.includes("语气打压")) {
     return "我理解我们对这件事的判断可能不完全一样。为了让合作更顺利，我们可以先聚焦目标、分工、时间节点和预期结果来讨论。";
+  }
+
+  if (categories.includes("预算回避") || categories.includes("画饼不承诺")) {
+    return "这件事我们可以先对齐目标、双方投入、预算范围和交付边界。如果方向合适，我们再确认时间节点和书面合作方式。";
   }
 
   if (categories.includes("责任转嫁")) {

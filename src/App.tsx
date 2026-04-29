@@ -3,10 +3,12 @@ import { useMemo, useState } from "react";
 import InputPanel from "./components/InputPanel";
 import QuestionCards from "./components/QuestionCards";
 import ResultPanel from "./components/ResultPanel";
+import ScenarioSelect from "./components/ScenarioSelect";
 import ShareCard from "./components/ShareCard";
 import SelfResultPanel from "./components/SelfResultPanel";
 import SelfShareCard from "./components/SelfShareCard";
 import { analyzeText, type AnalysisResult } from "./lib/scoring";
+import type { CollaborationScenario } from "./lib/scenarios";
 import {
   analyzeSelfText,
   type SelfAnalysisResult,
@@ -20,13 +22,17 @@ type Mode = "check" | "self";
 export default function App() {
   const [mode, setMode] = useState<Mode>("check");
   const [text, setText] = useState("");
+  const [scenario, setScenario] =
+    useState<CollaborationScenario>("商务合作");
   const [error, setError] = useState("");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [selfText, setSelfText] = useState("");
+  const [selfScenario, setSelfScenario] =
+    useState<CollaborationScenario>("商务合作");
   const [selfError, setSelfError] = useState("");
   const [selfResult, setSelfResult] = useState<SelfAnalysisResult | null>(null);
 
-  const sampleResult = useMemo(() => analyzeText(sampleText), []);
+  const sampleResult = useMemo(() => analyzeText(sampleText, scenario), [scenario]);
 
   const handleTextChange = (value: string) => {
     setText(value);
@@ -38,7 +44,15 @@ export default function App() {
     }
 
     if (result) {
-      setResult(analyzeText(value));
+      setResult(analyzeText(value, scenario));
+    }
+  };
+
+  const handleScenarioChange = (nextScenario: CollaborationScenario) => {
+    setScenario(nextScenario);
+
+    if (text.trim() && result) {
+      setResult(analyzeText(text, nextScenario));
     }
   };
 
@@ -49,7 +63,7 @@ export default function App() {
     }
 
     setError("");
-    setResult(analyzeText(text));
+    setResult(analyzeText(text, scenario));
   };
 
   const handleSelfTextChange = (value: string) => {
@@ -62,7 +76,15 @@ export default function App() {
     }
 
     if (selfResult) {
-      setSelfResult(analyzeSelfText(value));
+      setSelfResult(analyzeSelfText(value, selfScenario));
+    }
+  };
+
+  const handleSelfScenarioChange = (nextScenario: CollaborationScenario) => {
+    setSelfScenario(nextScenario);
+
+    if (selfText.trim() && selfResult) {
+      setSelfResult(analyzeSelfText(selfText, nextScenario));
     }
   };
 
@@ -73,7 +95,7 @@ export default function App() {
     }
 
     setSelfError("");
-    setSelfResult(analyzeSelfText(selfText));
+    setSelfResult(analyzeSelfText(selfText, selfScenario));
   };
 
   const isSelfMode = mode === "self";
@@ -120,23 +142,27 @@ export default function App() {
         {isSelfMode ? (
           <SelfMode
             text={selfText}
+            scenario={selfScenario}
             error={selfError}
             result={selfResult}
             onTextChange={handleSelfTextChange}
+            onScenarioChange={handleSelfScenarioChange}
             onAnalyze={handleSelfAnalyze}
           />
         ) : (
           <CheckMode
             text={text}
+            scenario={scenario}
             error={error}
             result={result}
             sampleScore={sampleResult.score}
             onTextChange={handleTextChange}
+            onScenarioChange={handleScenarioChange}
             onAnalyze={handleAnalyze}
             onUseSample={() => {
               setText(sampleText);
               setError("");
-              setResult(analyzeText(sampleText));
+              setResult(analyzeText(sampleText, scenario));
             }}
           />
         )}
@@ -171,24 +197,29 @@ function TabButton({
 
 function CheckMode({
   text,
+  scenario,
   error,
   result,
   sampleScore,
   onTextChange,
+  onScenarioChange,
   onAnalyze,
   onUseSample,
 }: {
   text: string;
+  scenario: CollaborationScenario;
   error: string;
   result: AnalysisResult | null;
   sampleScore: number;
   onTextChange: (value: string) => void;
+  onScenarioChange: (scenario: CollaborationScenario) => void;
   onAnalyze: () => void;
   onUseSample: () => void;
 }) {
   return (
     <div className="mt-6 space-y-6">
       <QuestionCards />
+      <ScenarioSelect value={scenario} onChange={onScenarioChange} />
       <InputPanel
         value={text}
         error={error}
@@ -227,19 +258,24 @@ function CheckMode({
 
 function SelfMode({
   text,
+  scenario,
   error,
   result,
   onTextChange,
+  onScenarioChange,
   onAnalyze,
 }: {
   text: string;
+  scenario: CollaborationScenario;
   error: string;
   result: SelfAnalysisResult | null;
   onTextChange: (value: string) => void;
+  onScenarioChange: (scenario: CollaborationScenario) => void;
   onAnalyze: () => void;
 }) {
   return (
     <div className="mt-6 space-y-6">
+      <ScenarioSelect value={scenario} onChange={onScenarioChange} />
       <InputPanel
         value={text}
         error={error}

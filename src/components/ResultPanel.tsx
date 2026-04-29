@@ -12,6 +12,7 @@ const categories: RiskCategory[] = [
   "边界模糊",
   "责任转嫁",
   "权力压迫",
+  "亲密越界",
 ];
 
 const getTone = (score: number) => {
@@ -50,6 +51,7 @@ export default function ResultPanel({ result }: ResultPanelProps) {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-2xl font-black text-ink">{result.title}</h2>
+            <Badge tone="neutral">当前场景：{result.scenario}</Badge>
             {result.riskTags.map((tag) => (
               <Badge key={tag} tone={tag === "正常合作型" ? "success" : "accent"}>
                 {tag}
