@@ -28,6 +28,20 @@ export default function App() {
 
   const sampleResult = useMemo(() => analyzeText(sampleText), []);
 
+  const handleTextChange = (value: string) => {
+    setText(value);
+    setError("");
+
+    if (!value.trim()) {
+      setResult(null);
+      return;
+    }
+
+    if (result) {
+      setResult(analyzeText(value));
+    }
+  };
+
   const handleAnalyze = () => {
     if (!text.trim()) {
       setError("先粘贴对方回复，再开始验登。");
@@ -36,6 +50,20 @@ export default function App() {
 
     setError("");
     setResult(analyzeText(text));
+  };
+
+  const handleSelfTextChange = (value: string) => {
+    setSelfText(value);
+    setSelfError("");
+
+    if (!value.trim()) {
+      setSelfResult(null);
+      return;
+    }
+
+    if (selfResult) {
+      setSelfResult(analyzeSelfText(value));
+    }
   };
 
   const handleSelfAnalyze = () => {
@@ -94,7 +122,7 @@ export default function App() {
             text={selfText}
             error={selfError}
             result={selfResult}
-            onTextChange={setSelfText}
+            onTextChange={handleSelfTextChange}
             onAnalyze={handleSelfAnalyze}
           />
         ) : (
@@ -103,11 +131,12 @@ export default function App() {
             error={error}
             result={result}
             sampleScore={sampleResult.score}
-            onTextChange={setText}
+            onTextChange={handleTextChange}
             onAnalyze={handleAnalyze}
             onUseSample={() => {
               setText(sampleText);
               setError("");
+              setResult(analyzeText(sampleText));
             }}
           />
         )}
