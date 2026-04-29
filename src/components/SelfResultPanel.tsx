@@ -2,6 +2,7 @@ import { useState } from "react";
 import Badge from "./Badge";
 import ReplyScripts from "./ReplyScripts";
 import RiskRadar from "./RiskRadar";
+import Sticker from "./Sticker";
 import type {
   SelfAnalysisResult,
   SelfRiskCategory,
@@ -49,14 +50,27 @@ export default function SelfResultPanel({ result }: SelfResultPanelProps) {
   };
 
   return (
-    <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft sm:p-6">
+    <section className="brand-card rounded-[28px] p-5 sm:p-6">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-2xl font-black text-ink">自评结果</h2>
+          <p className="mt-1 text-sm font-bold text-muted">发送前表达体检完成</p>
+        </div>
+        <Sticker tone="mint">先照见自己</Sticker>
+      </div>
       <div className="grid gap-5 lg:grid-cols-[220px_1fr]">
-        <div className="rounded-2xl border border-black/10 bg-paper p-5">
+        <div className="rounded-[24px] border border-borderSoft bg-white p-5">
           <p className="text-sm font-semibold text-muted">登味儿指数</p>
-          <div className={`mt-2 text-6xl font-black ${getScoreColor(result.score)}`}>
+          <div className={`mt-2 text-7xl font-black ${getScoreColor(result.score)}`}>
             {result.score}
           </div>
           <p className="mt-2 text-sm font-semibold text-muted">/ 100</p>
+          <div className="mt-5 h-3 overflow-hidden rounded-full bg-mint">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-success via-warning to-coral"
+              style={{ width: `${result.score}%` }}
+            />
+          </div>
           <div className="mt-5">
             <Badge tone={getTone(result.score)}>{result.level}</Badge>
           </div>
@@ -103,7 +117,7 @@ export default function SelfResultPanel({ result }: SelfResultPanelProps) {
       </div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-black/10 bg-paper p-5">
+        <div className="rounded-2xl border border-success/20 bg-mint p-5">
           <h3 className="text-base font-bold text-ink">建议动作</h3>
           <p className="mt-2 text-sm leading-6 text-muted">{result.advice}</p>
         </div>

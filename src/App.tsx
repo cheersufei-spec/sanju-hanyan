@@ -1,5 +1,7 @@
-import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
+import FooterBar from "./components/FooterBar";
+import Header from "./components/Header";
+import Hero from "./components/Hero";
 import InputPanel from "./components/InputPanel";
 import QuestionCards from "./components/QuestionCards";
 import ResultPanel from "./components/ResultPanel";
@@ -101,44 +103,10 @@ export default function App() {
   const isSelfMode = mode === "self";
 
   return (
-    <main className="min-h-screen bg-paper px-4 py-8 text-ink sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-[960px]">
-        <nav className="mb-4 grid grid-cols-2 gap-2 rounded-2xl border border-black/10 bg-white p-2 shadow-soft">
-          <TabButton
-            active={mode === "check"}
-            onClick={() => setMode("check")}
-          >
-            三句话验登
-          </TabButton>
-          <TabButton active={isSelfMode} onClick={() => setMode("self")}>
-            自评登味儿
-          </TabButton>
-        </nav>
-
-        <header className="rounded-3xl border border-black/10 bg-white px-6 py-8 shadow-soft sm:px-8 sm:py-10">
-          <div className="inline-flex rounded-full border border-accent/35 bg-accent/15 px-4 py-2 text-sm font-bold text-ink">
-            {isSelfMode ? "发送前沟通自检" : "合作风险预检工具"}
-          </div>
-          <h1 className="mt-5 text-4xl font-black tracking-normal text-ink sm:text-6xl">
-            {isSelfMode ? "自评登味儿" : "三句话验登"}
-          </h1>
-          <p className="mt-4 text-xl font-bold text-ink sm:text-2xl">
-            {isSelfMode
-              ? "发消息前，也照见自己。"
-              : "合作前，先看清对方。"}
-          </p>
-          <p className="mt-5 max-w-3xl text-base leading-8 text-muted">
-            {isSelfMode
-              ? "有时候我们被别人打压，也有时候我们在压力、惯性和权力位置里，不小心把沟通变成了压迫。「自评登味儿」帮你在发出消息前，检查自己的表达是否清晰、尊重、对等、有边界。"
-              : "粘贴对方在合作沟通中的回复，识别打压、白嫖、画饼、甩锅、越界和事后改口风险。"}
-          </p>
-          <p className="mt-3 text-sm font-medium text-muted">
-            {isSelfMode
-              ? "本功能用于合作沟通自检，帮助你把话说得更清楚、更体面、更不伤人。"
-              : "本工具评估的是合作沟通风险，不评估真实年龄。"}
-          </p>
-        </header>
-
+    <main className="min-h-screen px-4 py-5 text-ink sm:px-6 lg:px-8">
+      <Header mode={mode} onModeChange={setMode} />
+      <Hero isSelfMode={isSelfMode} />
+      <div className="mx-auto max-w-[1440px]">
         {isSelfMode ? (
           <SelfMode
             text={selfText}
@@ -167,31 +135,8 @@ export default function App() {
           />
         )}
       </div>
+      <FooterBar />
     </main>
-  );
-}
-
-function TabButton({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-xl px-4 py-3 text-sm font-black transition ${
-        active
-          ? "bg-ink text-white"
-          : "bg-transparent text-muted hover:bg-paper hover:text-ink"
-      }`}
-    >
-      {children}
-    </button>
   );
 }
 
@@ -217,41 +162,38 @@ function CheckMode({
   onUseSample: () => void;
 }) {
   return (
-    <div className="mt-6 space-y-6">
-      <QuestionCards />
-      <ScenarioSelect value={scenario} onChange={onScenarioChange} />
-      <InputPanel
-        value={text}
-        error={error}
-        onChange={onTextChange}
-        onAnalyze={onAnalyze}
-      />
+    <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,520px)_minmax(300px,380px)]">
+      <section className="space-y-5">
+        <QuestionCards />
+        <ScenarioSelect value={scenario} onChange={onScenarioChange} />
+        <InputPanel
+          value={text}
+          error={error}
+          onChange={onTextChange}
+          onAnalyze={onAnalyze}
+        />
+      </section>
 
-      {result ? (
-        <>
+      <section>
+        {result ? (
           <ResultPanel result={result} />
+        ) : (
+          <EmptyState
+            title="还没开始验登"
+            description={`粘贴对方回复后点击按钮。示例高风险样本当前可算到 ${sampleScore} 分。`}
+            actionLabel="填入高风险样例"
+            onAction={onUseSample}
+          />
+        )}
+      </section>
+
+      <aside className="xl:sticky xl:top-28 xl:self-start">
+        {result ? (
           <ShareCard result={result} />
-        </>
-      ) : (
-        <section className="rounded-2xl border border-dashed border-black/15 bg-white/65 p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-ink">还没开始验登</h2>
-              <p className="mt-1 text-sm leading-6 text-muted">
-                粘贴对方回复后点击按钮。示例高风险样本当前可算到{" "}
-                <span className="font-bold text-danger">{sampleScore}</span> 分。
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={onUseSample}
-              className="rounded-xl border border-black/10 bg-white px-4 py-3 text-sm font-bold text-ink transition hover:border-accent hover:text-accent"
-            >
-              填入高风险样例
-            </button>
-          </div>
-        </section>
-      )}
+        ) : (
+          <SharePlaceholder />
+        )}
+      </aside>
     </div>
   );
 }
@@ -274,32 +216,89 @@ function SelfMode({
   onAnalyze: () => void;
 }) {
   return (
-    <div className="mt-6 space-y-6">
-      <ScenarioSelect value={scenario} onChange={onScenarioChange} />
-      <InputPanel
-        value={text}
-        error={error}
-        title="粘贴你准备发送的话"
-        description="不接后端，不存数据，只做发送前的本地表达风险自检。"
-        placeholder="请粘贴你准备发给对方的话。例如：“你们先做起来吧，年轻人不要一上来就谈预算。这个事情长期价值很大，后面资源不会少……”"
-        buttonLabel="开始自评"
-        onChange={onTextChange}
-        onAnalyze={onAnalyze}
-      />
+    <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,520px)_minmax(300px,380px)]">
+      <section className="space-y-5">
+        <ScenarioSelect value={scenario} onChange={onScenarioChange} />
+        <InputPanel
+          value={text}
+          error={error}
+          title="粘贴你准备发送的话"
+          description="不接后端，不存数据，只做发送前的本地表达风险自检。"
+          placeholder="请粘贴你准备发给对方的话。例如：“你们先做起来吧，年轻人不要一上来就谈预算。这个事情长期价值很大，后面资源不会少……”"
+          buttonLabel="✨ 开始自评"
+          onChange={onTextChange}
+          onAnalyze={onAnalyze}
+        />
+      </section>
 
-      {result ? (
-        <>
+      <section>
+        {result ? (
           <SelfResultPanel result={result} />
+        ) : (
+          <EmptyState
+            title="还没开始自评"
+            description="粘贴准备发送的话，先把压迫感、画饼感和越界感拦在发送键前。"
+          />
+        )}
+      </section>
+
+      <aside className="xl:sticky xl:top-28 xl:self-start">
+        {result ? (
           <SelfShareCard result={result} />
-        </>
-      ) : (
-        <section className="rounded-2xl border border-dashed border-black/15 bg-white/65 p-6">
-          <h2 className="text-lg font-bold text-ink">还没开始自评</h2>
-          <p className="mt-1 text-sm leading-6 text-muted">
-            粘贴准备发送的话，先把压迫感、画饼感和越界感拦在发送键前。
-          </p>
-        </section>
-      )}
+        ) : (
+          <SharePlaceholder />
+        )}
+      </aside>
     </div>
+  );
+}
+
+function EmptyState({
+  title,
+  description,
+  actionLabel,
+  onAction,
+}: {
+  title: string;
+  description: string;
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <section className="brand-card rounded-[28px] border-dashed p-6">
+      <p className="inline-flex rounded-full bg-mint px-3 py-1 text-xs font-black text-ink">
+        等待分析
+      </p>
+      <h2 className="mt-4 text-2xl font-black text-ink">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-muted">{description}</p>
+      {actionLabel && onAction ? (
+        <button
+          type="button"
+          onClick={onAction}
+          className="mt-5 rounded-full border border-accent/40 bg-white px-5 py-3 text-sm font-black text-ink transition hover:-translate-y-0.5 hover:border-accent hover:text-accent"
+        >
+          {actionLabel}
+        </button>
+      ) : null}
+    </section>
+  );
+}
+
+function SharePlaceholder() {
+  return (
+    <section className="brand-card rounded-[28px] p-5">
+      <p className="text-sm font-black text-ink">一键分享你的验登卡片</p>
+      <div className="mt-4 rounded-3xl bg-ink p-5 text-white">
+        <p className="text-sm text-white/60">三句话验登</p>
+        <p className="mt-2 text-2xl font-black">合作前验一验</p>
+        <p className="mt-1 text-sm text-white/70">少踩坑，多安心</p>
+        <div className="mt-6 rounded-2xl bg-white/10 p-4">
+          <p className="text-sm text-white/60">分享卡片将在分析后生成</p>
+        </div>
+      </div>
+      <div className="mt-4 rounded-2xl border border-borderSoft bg-white p-4 text-center text-sm font-bold text-muted">
+        长按识别二维码，试试「三句话验登」
+      </div>
+    </section>
   );
 }

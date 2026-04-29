@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Mascot from "./Mascot";
 import type { AnalysisResult } from "../lib/scoring";
 import { getTopRadarRisks } from "../lib/radar";
 
@@ -50,13 +51,22 @@ export default function ShareCard({ result }: ShareCardProps) {
       </div>
 
       <div className="mx-auto max-w-[720px] overflow-hidden rounded-3xl border border-black/10 bg-paper">
-        <div className="border-b border-black/10 bg-ink px-6 py-5 text-white">
-          <p className="text-sm font-semibold text-[#F7F6F1]/70">
-            三句话验登报告
-          </p>
-          <h2 className="mt-1 text-3xl font-black text-[#F7F6F1]">
-            合作前风险快照
-          </h2>
+        <div className="flex items-center justify-between gap-4 border-b border-black/10 bg-ink px-6 py-5 text-white">
+          <div>
+            <p className="text-sm font-semibold text-[#F7F6F1]/70">
+              三句话验登 · 合作前验一验
+            </p>
+            <h2 className="mt-1 text-3xl font-black text-[#F7F6F1]">
+              合作前风险快照
+            </h2>
+            <p className="mt-1 text-sm font-bold text-white/60">少踩坑，多安心</p>
+          </div>
+          <div className="relative shrink-0">
+            <Mascot compact />
+            <span className="absolute -right-2 -top-2 rounded-full bg-mint px-2 py-1 text-xs font-black text-ink">
+              稳了！
+            </span>
+          </div>
         </div>
 
         <div className="p-6">
