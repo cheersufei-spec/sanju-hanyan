@@ -1,4 +1,6 @@
+import { calculateRiskRadar } from "./radar";
 import { scenarioAdvice, type CollaborationScenario } from "./scenarios";
+import type { RiskRadar } from "./types";
 
 export type SelfRiskCategory =
   | "画饼不承诺"
@@ -21,6 +23,7 @@ export type SelfAnalysisResult = {
   advice: string;
   rewrittenMessage: string;
   scenario: CollaborationScenario;
+  radar: RiskRadar;
 };
 
 const selfRiskLexicon: Record<SelfRiskCategory, string[]> = {
@@ -182,6 +185,7 @@ const selfRiskLexicon: Record<SelfRiskCategory, string[]> = {
     "单独",
     "深夜",
     "不要告诉别人",
+    "别让别人知道",
   ],
   过度说教: [
     "我教你",
@@ -433,6 +437,7 @@ export function analyzeSelfText(
     potentialImpact: getPotentialImpact(matchedCategories, riskHits),
     rewrittenMessage: getRewrittenMessage(matchedCategories),
     scenario,
+    radar: calculateRiskRadar(normalizedText, finalScore),
   };
 }
 

@@ -1,4 +1,5 @@
 import type { AnalysisResult } from "../lib/scoring";
+import { getTopRadarRisks } from "../lib/radar";
 
 type ShareCardProps = {
   result: AnalysisResult;
@@ -12,6 +13,8 @@ const getRiskColor = (score: number) => {
 };
 
 export default function ShareCard({ result }: ShareCardProps) {
+  const topRisks = getTopRadarRisks(result.radar);
+
   return (
     <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft sm:p-6">
       <div className="mx-auto max-w-xl overflow-hidden rounded-2xl border border-black/10 bg-[#fffaf0]">
@@ -36,6 +39,16 @@ export default function ShareCard({ result }: ShareCardProps) {
 
           <dl className="mt-6 space-y-4">
             <ShareRow label="风险人格" value={result.riskTags.join("、")} />
+            <ShareRow
+              label="主要风险"
+              value={
+                topRisks.length > 0
+                  ? topRisks
+                      .map((risk, index) => `${index + 1}. ${risk.label}：${risk.score}/100`)
+                      .join("；")
+                  : "暂无明显高风险维度"
+              }
+            />
             <ShareRow label="建议" value={result.advice} />
             <ShareRow label="验登结论" value={result.shareConclusion} />
             <ShareRow label="结论" value="这个合作，先让对方写清楚。" />

@@ -1,4 +1,5 @@
 import Badge from "./Badge";
+import RiskRadar from "./RiskRadar";
 import type { AnalysisResult, RiskCategory } from "../lib/scoring";
 
 type ResultPanelProps = {
@@ -78,6 +79,14 @@ export default function ResultPanel({ result }: ResultPanelProps) {
             />
           </div>
         </div>
+      </div>
+
+      <div className="mt-5">
+        <RiskRadar
+          radar={result.radar}
+          title="六维风险雷达"
+          description="分数越高，代表该维度风险越明显。"
+        />
       </div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">

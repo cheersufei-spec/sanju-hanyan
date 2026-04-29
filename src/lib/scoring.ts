@@ -1,4 +1,6 @@
+import { calculateRiskRadar } from "./radar";
 import { scenarioAdvice, type CollaborationScenario } from "./scenarios";
+import type { RiskRadar } from "./types";
 
 export type RiskCategory =
   | "白嫖画饼"
@@ -21,6 +23,7 @@ export type AnalysisResult = {
   explanation: string;
   shareConclusion: string;
   scenario: CollaborationScenario;
+  radar: RiskRadar;
 };
 
 const riskLexicon: Record<RiskCategory, string[]> = {
@@ -124,6 +127,7 @@ const riskLexicon: Record<RiskCategory, string[]> = {
     "私下",
     "深夜",
     "不要告诉别人",
+    "别让别人知道",
     "喝一杯",
     "陪我喝点",
     "来我酒店",
@@ -457,6 +461,7 @@ export function analyzeText(
   }
 
   const shareConclusion = getShareConclusion(finalScore, hasPersonaAttack);
+  const radar = calculateRiskRadar(normalizedText, finalScore);
 
   return {
     score: finalScore,
@@ -468,6 +473,7 @@ export function analyzeText(
     explanation: explanationParts.join(" "),
     shareConclusion,
     scenario,
+    radar,
   };
 }
 

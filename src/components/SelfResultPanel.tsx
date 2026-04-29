@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Badge from "./Badge";
+import RiskRadar from "./RiskRadar";
 import type {
   SelfAnalysisResult,
   SelfRiskCategory,
@@ -90,6 +91,14 @@ export default function SelfResultPanel({ result }: SelfResultPanelProps) {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-5">
+        <RiskRadar
+          radar={result.radar}
+          title="我的表达风险雷达"
+          description="分数越高，代表这段表达越容易让对方感到不适或不安全。"
+        />
       </div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">

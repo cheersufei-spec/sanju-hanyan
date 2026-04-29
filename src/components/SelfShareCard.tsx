@@ -1,4 +1,5 @@
 import type { SelfAnalysisResult } from "../lib/scoringSelf";
+import { getTopRadarRisks } from "../lib/radar";
 
 type SelfShareCardProps = {
   result: SelfAnalysisResult;
@@ -12,6 +13,7 @@ const getRiskColor = (score: number) => {
 };
 
 export default function SelfShareCard({ result }: SelfShareCardProps) {
+  const topRisks = getTopRadarRisks(result.radar);
   const suggestion =
     result.score <= 20
       ? "表达清爽，可以发送，关键事项记得书面确认。"
@@ -41,6 +43,16 @@ export default function SelfShareCard({ result }: SelfShareCardProps) {
 
           <dl className="mt-6 space-y-4">
             <ShareRow label="我的风险标签" value={result.riskTags.join("、")} />
+            <ShareRow
+              label="主要风险"
+              value={
+                topRisks.length > 0
+                  ? topRisks
+                      .map((risk, index) => `${index + 1}. ${risk.label}：${risk.score}/100`)
+                      .join("；")
+                  : "暂无明显高风险维度"
+              }
+            />
             <ShareRow label="对方可能感受" value={result.potentialImpact} />
             <ShareRow label="建议" value={suggestion} />
           </dl>
